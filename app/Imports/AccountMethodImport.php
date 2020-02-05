@@ -4,8 +4,9 @@ namespace App\Imports;
 
 use App\ORM\AccountMethod;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class AccountMethodImport implements ToModel
+class AccountMethodImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -14,8 +15,9 @@ class AccountMethodImport implements ToModel
     */
     public function model(array $row)
     {
-        return new AccountMethod([
-            //
+        return new  AccountMethod([
+            'id' => $row['id'],
+            'name' => $row['name'],
         ]);
     }
 }

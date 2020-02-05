@@ -18,7 +18,7 @@ class CreateAccountProductsTable extends Migration
             $table->unsignedBigInteger('account_id')->comment('会計ID');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->integer('product_amount')->comment('商品金額');
-            $table->unsignedBigInteger('discount_id')->comment('割引ID');
+            $table->unsignedBigInteger('discount_id')->nullable()->comment('割引ID');
             $table->integer('product_discount_amount')->comment('商品割引金額');
             $table->integer('consumption_tax_rate')->comment('適用消費税率');
             $table->integer('consumption_tax_amount')->comment('適用消費税金額');

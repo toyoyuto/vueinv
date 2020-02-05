@@ -4,8 +4,9 @@ namespace App\Imports;
 
 use App\ORM\ConsumptionTax;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ConsumptionTaxImport implements ToModel
+class ConsumptionTaxImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -15,7 +16,8 @@ class ConsumptionTaxImport implements ToModel
     public function model(array $row)
     {
         return new ConsumptionTax([
-            //
+            'id' => $row['id'],
+            'rate' => $row['rate'],
         ]);
     }
 }

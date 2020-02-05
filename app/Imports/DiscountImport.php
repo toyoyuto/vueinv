@@ -4,8 +4,9 @@ namespace App\Imports;
 
 use App\ORM\Discount;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class DiscountImport implements ToModel
+class DiscountImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -15,7 +16,8 @@ class DiscountImport implements ToModel
     public function model(array $row)
     {
         return new Discount([
-            //
+            'discount_type' => $row['discount_type'],
+            'name' => $row['name'],
         ]);
     }
 }

@@ -24,10 +24,11 @@ class CreateAccountsTable extends Migration
             $table->integer('tax_amount_2')->comment('消費税金額(10%)');
             $table->integer('total_tax_amount')->comment('合計消費税金額');
             $table->integer('total_amount')->comment('合計金額(税込み)');
+            $table->boolean('account_discount_flag')->default(false)->comment('会計割引FLAG');
             $table->integer('account_discount_amount')->comment('会計割引金額');
             $table->integer('account_amount')->comment('会計金額');
-            $table->unsignedBigInteger('account_method_id')->comment('会計方法名ID');
-            $table->dateTime('accounted_at')->comment('会計時刻');
+            $table->unsignedBigInteger('account_method_id')->nullable()->comment('会計方法名ID');
+            $table->dateTime('accounted_at')->nullable()->comment('会計時刻');
             $table->boolean('accounted_flag')->default(false)->comment('会計完了FLAG');
             $table->timestamps();
             $table->softDeletes();
