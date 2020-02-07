@@ -19,10 +19,10 @@ class AccountProduct extends Model
     protected $fillable = [
         'account_id',
         'product_id',
-        'product_amount',
+        'without_tax_sell_price',
         'discount_id',
         'product_discount_amount',
         'consumption_tax_rate',
-        'consumption_tax_amount',
+        'account_product_amount',
     ];
 }

@@ -11,6 +11,7 @@ use App\ORM\ProductCategory;
 use App\ORM\AccountMethod;
 use App\ORM\AccountProduct;
 use App\ORM\Discount;
+use App\ORM\AccountDiscount;
 
 class AccountsTableSeeder extends Seeder
 {
@@ -34,19 +35,24 @@ class AccountsTableSeeder extends Seeder
         DB::enableQueryLog();
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Account::truncate();
+        AccountProduct::truncate();
+        AccountDiscount::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 挿入用データ
         $store_ids = Store::get()->pluck('id')->toArray();
         $staff_ids = Staff::get()->pluck('id')->toArray();
         $account_method_ids = AccountMethod::get()->pluck('id')->toArray();
+        $discount_ids = Discount::get()->groupBy('discount_type');
 
         //　計算用データ
-        $product_category_ids = ProductCategory::get()->pluck('id')->toArray();
-        $consumption_tax_records = ConsumptionTax::get()->pluck('id', 'rate')->toArray();
+        $consumption_tax_rates = ConsumptionTax::orderBy('rate')->get()->pluck('rate')->toArray();
         $product_records = Product::with('productCategory.consumptionTax')->get();
+
+        // 会計に対しての割り引きデータを取得
+        $account_discount_ids = $discount_ids[1]->pluck('id')->toArray();
         // 商品に対しての割り引きデータを取得
-        $discount_ids = Discount::where('discount_type', 2)->get()->pluck('id')->toArray();
+        $product_discount_ids = $discount_ids[2]->pluck('id')->toArray();
 
         $now = now();
         $insert_data　= [];
@@ -68,74 +74,18 @@ class AccountsTableSeeder extends Seeder
 
             $row_data  = [];
             $row_data['tax_amount_1_product_amount'] = 0;
-            $row_data['tax_amount_1'] = 0; 
             $row_data['tax_amount_2_product_amount'] = 0;
-            $row_data['tax_amount_2'] = 0; 
 
             // 金額の差異がないようにaccount_productのデータもここで入れる
-            $account_products->map(function ($account_product, $key) use(&$row_data, &$account_product_insert_data, $discount_ids, $now) {
-                // 割引されるか判定
-                $product_discount_id = null;
-                $product_discount_amount = 0;
-                if ($this->faker->boolean(20)) {
-                    $product_discount_id = $this->faker->randomElement($discount_ids);
-                    $product_discount_amount = $this->faker->numberBetween(0, $account_product->without_tax_sell_price);
-                }
-                // 消費税率
-                $tax_rate = 0.01 * $account_product->productCategory->consumptionTax->rate;
-                $account_product_row  = [];
-                $account_product_row['product_id'] = $account_product->id;
-                $account_product_row['product_amount'] = $account_product->without_tax_sell_price;
-                $account_product_row['discount_id'] = $product_discount_id;
-                $account_product_row['product_discount_amount'] = $product_discount_amount;
-                $account_product_row['consumption_tax_rate'] = $account_product->productCategory->consumptionTax->rate;;
-                $account_product_row['consumption_tax_amount'] = round($account_product->without_tax_sell_price * $tax_rate);
-                $account_product_row['created_at'] = $now;
-                $account_product_row['updated_at'] = $now;
-                $account_product_insert_data[] = $account_product_row;
-
-                // 会計データに入れるため商品の金額を足していく
-                If ($account_product->productCategory->consumptionTax->rate == 8){
-                    $row_data['tax_amount_1_product_amount'] += $account_product_row['product_amount']; 
-                    $row_data['tax_amount_1'] += $account_product_row['consumption_tax_amount']; 
-                } else {
-                    $row_data['tax_amount_2_product_amount'] += $account_product_row['product_amount'];
-                    $row_data['tax_amount_2'] += $account_product_row['consumption_tax_amount']; 
-                }
+            $account_products->map(function ($account_product, $key) use(&$row_data, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates) {
+                Log::info('$product_discount_amount');
+                $this->makeAccountproduct($account_product, $row_data, $account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates);
             });
-            // $group_products = $account_products->groupBy('productCategory.consumptionTax.rate');
-       
-            // $row_data  = [];
-            // $row_data['tax_amount_1_product_amount'] = 0;
-            // $row_data['tax_amount_1'] = 0; 
-            // $row_data['tax_amount_2_product_amount'] = 0;
-            // $row_data['tax_amount_2'] = 0; 
-            // $group_products->map(function ($account_products, $key) use(&$row_data) {
-            //     $tax_rate = 0.01 * $key;
-            //     If ($key == 8){
-            //         $row_data['tax_amount_1_product_amount'] = $account_products->sum('without_tax_sell_price'); 
-            //         $row_data['tax_amount_1'] = round($account_products->sum('without_tax_sell_price') * $tax_rate); 
-            //     } else {
-            //         $row_data['tax_amount_2_product_amount'] = $account_products->sum('without_tax_sell_price');
-            //         $row_data['tax_amount_2'] = round($account_products->sum('without_tax_sell_price') * $tax_rate); 
-            //     }
-            // });
-            // 消費税の合計
-            $row_data['total_tax_amount'] = $row_data['tax_amount_1'] + $row_data['tax_amount_2'];
-            // $category1_products = $account_products->where('productCategory.consumptionTax.id', 1);
-            // $category2_products = $account_products->where('productCategory.consumptionTax.id', 2);
-            // // Log::debug('grouped');
-            // // Log::debug($grouped->count());
-            // // // 消費税毎にまとめる
-            // // $category1_products = $account_products->filter(function ($value, $key) {
-            // //     return $value->productCategory->consumptionTax->id == 1;
-            // // });
-            // // $category2_products = $account_products->filter(function ($value, $key) {
-            // //     return $value->productCategory->consumptionTax->id == 2;
-            // // });
-            // $tax_amount_1_product_amount = $category1_products->sum('without_tax_sell_price'); 
 
-            // $tax_amount_2_product_amount = $category2_products->sum('without_tax_sell_price'); 
+            // 消費税の合計
+            $tax_amount_1= round($row_data['tax_amount_1_product_amount'] * ($consumption_tax_rates[0] * 0.01));
+            $tax_amount_2 = round($row_data['tax_amount_2_product_amount'] * ($consumption_tax_rates[1] * 0.01));
+            $total_tax_amount = $tax_amount_1 + $tax_amount_2;
 
             // 会計済みフラグが立っていれば,会計時刻と会計方法を入力
             $accounted_at = null;
@@ -147,22 +97,22 @@ class AccountsTableSeeder extends Seeder
             // 割引を行うか
             $account_discount_amount = 0;
             $account_discount_flag = false;
+            $account_discount_id = null;
             if ($this->faker->boolean(20)) {
                 $account_discount_flag = true;
-                $account_discount_amount = $this->faker->numberBetween(0, $total_product_amount + $row_data['total_tax_amount']);
-                // シーダーを呼ぶ
-                //$this->call(AccountDiscountsTableSeeder::class);
+                $account_discount_amount = $this->faker->numberBetween(0, $total_product_amount + $total_tax_amount);
+                $account_discount_id = $this->faker->randomElement($account_discount_ids);
             }
             $row  = [];
             $row['staff_id'] = $this->faker->randomElement($staff_ids);
             $row['store_id'] = $this->faker->randomElement($store_ids);
             $row['total_product_amount'] = $total_product_amount;
             $row['tax_amount_1_product_amount'] = $row_data['tax_amount_1_product_amount'];
-            $row['tax_amount_1'] = $row_data['tax_amount_1'];
+            $row['tax_amount_1'] = $tax_amount_1;
             $row['tax_amount_2_product_amount'] = $row_data['tax_amount_2_product_amount'];
-            $row['tax_amount_2'] = $row_data['tax_amount_2'];
-            $row['total_tax_amount'] = $row_data['total_tax_amount'];
-            $row['total_amount'] = $total_product_amount + $row_data['total_tax_amount'];
+            $row['tax_amount_2'] = $tax_amount_2;
+            $row['total_tax_amount'] = $total_tax_amount;
+            $row['total_amount'] = $total_product_amount + $total_tax_amount;
             $row['account_discount_flag'] =  $account_discount_flag;
             $row['account_discount_amount'] =  $account_discount_amount;
             $row['account_amount'] = $row['total_amount'] - $row['account_discount_amount'];
@@ -177,9 +127,70 @@ class AccountsTableSeeder extends Seeder
             foreach($account_product_insert_data as &$account_product_data){
                 $account_product_data['account_id'] = $accunt->id;
             }
+            // 会計商品登録
             AccountProduct::insert($account_product_insert_data);
+            // 会計割引
+            if ($account_discount_id) {
+                $this->insertAccountDiscount($accunt->id, $account_discount_ids, $account_discount_amount, $now);
+            }
         }
-        // Account::insert($insert_data);
-        // AccountProduct::insert($account_product_insert_data);
     }
+
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function makeAccountproduct($account_product, &$row_data, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates)
+    {
+        // 割引されるか判定
+        $product_discount_id = null;
+        $product_discount_amount = 0;
+        if ($this->faker->boolean(20)) {
+            $product_discount_id = $this->faker->randomElement($product_discount_ids);
+            $product_discount_amount = $this->faker->numberBetween(0, $account_product->without_tax_sell_price);
+        }
+        // 消費税率
+        $tax_rate = 0.01 * $account_product->productCategory->consumptionTax->rate;
+
+        $account_product_row  = [];
+        $account_product_row['product_id'] = $account_product->id;
+        $account_product_row['without_tax_sell_price'] = $account_product->without_tax_sell_price;
+        $account_product_row['discount_id'] = $product_discount_id;
+        $account_product_row['product_discount_amount'] = $product_discount_amount;
+        $account_product_row['account_product_amount'] = $account_product_row['without_tax_sell_price'] - $account_product_row['product_discount_amount'];
+        $account_product_row['consumption_tax_rate'] = $account_product->productCategory->consumptionTax->rate;
+        $account_product_row['created_at'] = $now;
+        $account_product_row['updated_at'] = $now;
+        $account_product_insert_data[] = $account_product_row;
+
+        // 会計データに入れるため商品の金額を足していく(上は8,下は10)
+        // TODO: 消費税は個別ではなく、全体から計算する
+        If ($account_product->productCategory->consumptionTax->rate == $consumption_tax_rates[0]){
+            $row_data['tax_amount_1_product_amount'] += $account_product_row['account_product_amount']; 
+        } else {
+            $row_data['tax_amount_2_product_amount'] += $account_product_row['account_product_amount'];
+        }
+    }
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function insertAccountDiscount($account_id, $account_discount_ids, $discount_amount, $now)
+    {
+        $account_discount_insert_data = [];
+        $account_discount_id = $this->faker->randomElement($account_discount_ids);
+
+        $account_discount_row  = [];
+        $account_discount_row['account_id'] = $account_id;
+        $account_discount_row['discount_id'] = $account_discount_id;
+        $account_discount_row['discount_amount'] = $discount_amount;
+        $account_discount_row['created_at'] = $now;
+        $account_discount_row['updated_at'] = $now;
+        $account_discount_insert_data[] = $account_discount_row;
+        // 会計割引
+        AccountDiscount::insert($account_discount_insert_data);
+    }
+
 }
