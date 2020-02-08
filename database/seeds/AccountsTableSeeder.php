@@ -58,8 +58,8 @@ class AccountsTableSeeder extends Seeder
         // 現在時刻
         $now = now();
 
-        for ($cnt = 1; $cnt <= 10; $cnt++) {
-            Log::info("一回目${cnt}");
+        for ($cnt = 1; $cnt <= 100; $cnt++) {
+            Log::info("${cnt}回目");
             // 商品数
             $product_count = $this->faker->numberBetween(1, 10);
 
