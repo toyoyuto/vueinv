@@ -39,28 +39,27 @@ class AccountsTableSeeder extends Seeder
         AccountDiscount::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 挿入用データ
         $store_ids = Store::get()->pluck('id')->toArray();
         $staff_ids = Staff::get()->pluck('id')->toArray();
         $account_method_ids = AccountMethod::get()->pluck('id')->toArray();
+
+        // 会計、商品会計用割引データ
         $discount_ids = Discount::get()->groupBy('discount_type');
-
-        //　計算用データ
-        $consumption_tax_rates = ConsumptionTax::orderBy('rate')->get()->pluck('rate')->toArray();
-        $product_records = Product::with('productCategory.consumptionTax')->get();
-
         // 会計に対しての割り引きデータを取得
         $account_discount_ids = $discount_ids[1]->pluck('id')->toArray();
         // 商品に対しての割り引きデータを取得
         $product_discount_ids = $discount_ids[2]->pluck('id')->toArray();
 
+        // 消費税データ
+        $consumption_tax_rates = ConsumptionTax::orderBy('rate')->get()->pluck('rate')->toArray();
+        // 商品データ
+        $product_records = Product::with('productCategory.consumptionTax')->get();
+
+        // 現在時刻
         $now = now();
-        $insert_data　= [];
-        $account_product_insert_data = [];
+
         for ($cnt = 1; $cnt <= 10; $cnt++) {
             Log::info("一回目${cnt}");
-            // 会計済みフラグ
-            $account_flag = $this->faker->randomElement(Constants::AccountFlag);
             // 商品数
             $product_count = $this->faker->numberBetween(1, 10);
 
@@ -68,70 +67,68 @@ class AccountsTableSeeder extends Seeder
             // NOTE: ランダム個数取得したいため一旦コレクションから配列に変換、再度コレクションに戻す
             $account_products = collect($this->faker->randomElements($product_records->all() , $product_count, true));
 
-            // 商品の金額計算
-            // 商品金額合計(税抜き)
-            $total_product_amount = $account_products->sum('without_tax_sell_price');
+            // 会計商品一括登録用
+            $account_product_insert_data = [];
 
-            $row_data  = [];
-            $row_data['tax_amount_1_product_amount'] = 0;
-            $row_data['tax_amount_2_product_amount'] = 0;
+             // 会計データ
+            $account_object = new stdClass();
+            $account_object->tax_amount_1_product_amount = 0;
+            $account_object->tax_amount_2_product_amount = 0;
 
+            $account_product_insert_data = [];
+            
             // 金額の差異がないようにaccount_productのデータもここで入れる
-            $account_products->map(function ($account_product, $key) use(&$row_data, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates) {
-                Log::info('$product_discount_amount');
-                $this->makeAccountproduct($account_product, $row_data, $account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates);
+            $account_products->map(function ($account_product, $key) use(&$account_object, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates) {
+                $this->makeAccountproducts($account_product, $account_object, $account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates);
             });
 
-            // 消費税の合計
-            $tax_amount_1= round($row_data['tax_amount_1_product_amount'] * ($consumption_tax_rates[0] * 0.01));
-            $tax_amount_2 = round($row_data['tax_amount_2_product_amount'] * ($consumption_tax_rates[1] * 0.01));
-            $total_tax_amount = $tax_amount_1 + $tax_amount_2;
+            // 商品の金額計算
+            // 商品金額合計(税抜き)
+            $account_object->total_product_amount =
+                $account_object->tax_amount_1_product_amount + $account_object->tax_amount_2_product_amount;
+            // 消費税
+            $account_object->tax_amount_1=
+                round($account_object->tax_amount_1_product_amount* ($consumption_tax_rates[0] * 0.01));
+            $account_object->tax_amount_2 =
+                round($account_object->tax_amount_2_product_amount * ($consumption_tax_rates[1] * 0.01));
+            $account_object->total_tax_amount =
+                $account_object->tax_amount_1 + $account_object->tax_amount_2;
 
             // 会計済みフラグが立っていれば,会計時刻と会計方法を入力
-            $accounted_at = null;
-            $account_method_id = null;
-            if ($account_flag == Constants::AccountFlag['paid']) {
-                $accounted_at = $now ;
-                $account_method_id = $this->faker->randomElement($account_method_ids);
+            $account_method_object = new stdClass();
+            $account_method_object->accounted_at = null;
+            $account_method_object->account_method_id = null;
+            $account_method_object->account_flag = $this->faker->randomElement(Constants::AccountFlag);
+
+            if ($account_method_object->account_flag == Constants::AccountFlag['paid']) {
+                $account_method_object->accounted_at = $now;
+                $account_method_object->account_method_id = $this->faker->randomElement($account_method_ids);
             }
             // 割引を行うか
-            $account_discount_amount = 0;
-            $account_discount_flag = false;
-            $account_discount_id = null;
+            $account_discount_object = new stdClass();
+            $account_discount_object->account_discount_amount = 0;
+            $account_discount_object->account_discount_flag = false;
+            $account_discount_object->account_discount_id = null;
             if ($this->faker->boolean(20)) {
-                $account_discount_flag = true;
-                $account_discount_amount = $this->faker->numberBetween(0, $total_product_amount + $total_tax_amount);
-                $account_discount_id = $this->faker->randomElement($account_discount_ids);
+                $account_discount_object->account_discount_flag = true;
+                $account_discount_object->account_discount_amount =
+                    $this->faker->numberBetween(0, $account_object->total_product_amount + $account_object->total_tax_amount);
+                $account_discount_object->account_discount_id =
+                    $this->faker->randomElement($account_discount_ids);
             }
-            $row  = [];
-            $row['staff_id'] = $this->faker->randomElement($staff_ids);
-            $row['store_id'] = $this->faker->randomElement($store_ids);
-            $row['total_product_amount'] = $total_product_amount;
-            $row['tax_amount_1_product_amount'] = $row_data['tax_amount_1_product_amount'];
-            $row['tax_amount_1'] = $tax_amount_1;
-            $row['tax_amount_2_product_amount'] = $row_data['tax_amount_2_product_amount'];
-            $row['tax_amount_2'] = $tax_amount_2;
-            $row['total_tax_amount'] = $total_tax_amount;
-            $row['total_amount'] = $total_product_amount + $total_tax_amount;
-            $row['account_discount_flag'] =  $account_discount_flag;
-            $row['account_discount_amount'] =  $account_discount_amount;
-            $row['account_amount'] = $row['total_amount'] - $row['account_discount_amount'];
-            $row['account_method_id'] = $account_method_id;
-            $row['accounted_at'] = $accounted_at;
-            $row['accounted_flag'] = $account_flag;
-            $row['created_at'] = $now;
-            $row['updated_at'] = $now;
-            $insert_data[] = $row;
-            $accunt = Account::create($row);
+      
+            // 会計商品登録
+            $accunt =
+                $this->insertAccount($staff_ids, $store_ids, $now, $account_object, $account_method_object, $account_discount_object);
 
             foreach($account_product_insert_data as &$account_product_data){
                 $account_product_data['account_id'] = $accunt->id;
             }
             // 会計商品登録
             AccountProduct::insert($account_product_insert_data);
-            // 会計割引
-            if ($account_discount_id) {
-                $this->insertAccountDiscount($accunt->id, $account_discount_ids, $account_discount_amount, $now);
+            // 会計割引登録
+            if ($account_discount_object->account_discount_id) {
+                $this->insertAccountDiscount($accunt->id, $account_discount_object, $now);
             }
         }
     }
@@ -141,7 +138,7 @@ class AccountsTableSeeder extends Seeder
      *
      * @return void
      */
-    public function makeAccountproduct($account_product, &$row_data, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates)
+    public function makeAccountproducts($account_product, &$account_object, &$account_product_insert_data, $product_discount_ids, $now, $consumption_tax_rates)
     {
         // 割引されるか判定
         $product_discount_id = null;
@@ -167,25 +164,54 @@ class AccountsTableSeeder extends Seeder
         // 会計データに入れるため商品の金額を足していく(上は8,下は10)
         // TODO: 消費税は個別ではなく、全体から計算する
         If ($account_product->productCategory->consumptionTax->rate == $consumption_tax_rates[0]){
-            $row_data['tax_amount_1_product_amount'] += $account_product_row['account_product_amount']; 
+            $account_object->tax_amount_1_product_amount += $account_product_row['account_product_amount']; 
         } else {
-            $row_data['tax_amount_2_product_amount'] += $account_product_row['account_product_amount'];
+            $account_object->tax_amount_2_product_amount += $account_product_row['account_product_amount'];
         }
     }
+
+    /**
+     * Run the database seeds.
+     *
+     * @return $accuntnt
+     */
+    public function insertAccount($staff_ids, $store_ids, $now, $account_object, $account_method_object, $account_discount_object)
+    {
+        $account_data = [];
+        $account_data['staff_id'] = $this->faker->randomElement($staff_ids);
+        $account_data['store_id'] = $this->faker->randomElement($store_ids);
+        $account_data['total_product_amount'] = $account_object->total_product_amount;
+        $account_data['tax_amount_1_product_amount'] = $account_object->tax_amount_1_product_amount;
+        $account_data['tax_amount_1'] = $account_object->tax_amount_1;
+        $account_data['tax_amount_2_product_amount'] = $account_object->tax_amount_2_product_amount;
+        $account_data['tax_amount_2'] = $account_object->tax_amount_2;
+        $account_data['total_tax_amount'] = $account_object->total_tax_amount;
+        $account_data['total_amount'] = $account_object->total_product_amount + $account_object->total_tax_amount;
+        $account_data['account_discount_flag'] =  $account_discount_object->account_discount_flag;
+        $account_data['account_discount_amount'] =  $account_discount_object->account_discount_amount;
+        $account_data['account_amount'] = $account_data['total_amount'] - $account_data['account_discount_amount'];
+        $account_data['account_method_id'] = $account_method_object->account_method_id;
+        $account_data['accounted_at'] = $account_method_object->accounted_at;
+        $account_data['accounted_flag'] = $account_method_object->account_flag;
+        $account_data['created_at'] = $now;
+        $account_data['updated_at'] = $now;
+        $accunt = Account::create($account_data);
+        return $accunt;
+    }
+
     /**
      * Run the database seeds.
      *
      * @return void
      */
-    public function insertAccountDiscount($account_id, $account_discount_ids, $discount_amount, $now)
+    public function insertAccountDiscount($account_id, $account_discount_object, $now)
     {
         $account_discount_insert_data = [];
-        $account_discount_id = $this->faker->randomElement($account_discount_ids);
 
         $account_discount_row  = [];
         $account_discount_row['account_id'] = $account_id;
-        $account_discount_row['discount_id'] = $account_discount_id;
-        $account_discount_row['discount_amount'] = $discount_amount;
+        $account_discount_row['discount_id'] = $account_discount_object->account_discount_id;
+        $account_discount_row['discount_amount'] = $account_discount_object->account_discount_amount;
         $account_discount_row['created_at'] = $now;
         $account_discount_row['updated_at'] = $now;
         $account_discount_insert_data[] = $account_discount_row;
