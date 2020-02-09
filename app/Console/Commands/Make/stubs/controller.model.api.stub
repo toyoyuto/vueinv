@@ -1,0 +1,500 @@
+<?php
+
+namespace DummyNamespace;
+
+use App\Http\Requests\DummyRelativeNamespaceDummyResourceCamelSingularSearchRequest;
+use App\Http\Requests\DummyRelativeNamespaceDummyResourceCamelSingularStoreRequest;
+use App\Http\Requests\DummyRelativeNamespaceDummyResourceCamelSingularUpdateRequest;
+use App\Http\Resources\DummyRelativeNamespaceDummyResourceCamelSingularResource;
+use App\Http\Resources\DummyRelativeNamespaceDummyResourceCamelSingularResourceCollection;
+use DummyFullModelClass;
+use App\Services\DummyModelClassService;
+use App\ValueObjects\DummyModelClassStoreValue;
+use App\ValueObjects\DummyModelClassUpdateValue;
+use Throwable;
+
+class DummyClass extends BaseController
+{
+    /**
+     * @SWG\Get(
+     *     path="/api/DummyUrl",
+     *     summary="RESOURCE一覧",
+     *     description="RESOURCE一覧を返す。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *     @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakePlural",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularResourceCollection"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * Display a listing of the resource.
+     *
+     * @return DummyResourceCamelSingularResourceCollection
+     */
+    public function index()
+    {
+        $DummyModelVariables = DummyModelClass::orderBy('id')->get();
+
+        return new DummyResourceCamelSingularResourceCollection($DummyModelVariables);
+    }
+
+    /**
+     * @SWG\Post(
+     *     path="/api/DummyUrl",
+     *     summary="RESOURCE登録",
+     *     description="RESOURCEを登録する。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *    @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Parameter(
+     *         name="Request",
+     *         description="リクエストパラメータ",
+     *         in="body",
+     *         required=true,
+     *         type="object",
+     *         @SWG\Schema(
+     *             ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularStoreRequest"
+     *         )
+     *     ),
+     *
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakeSingular",
+     *                 type="object",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyModelClassResource"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * Store a newly created resource in storage.
+     *
+     * @param DummyModelClassService $service
+     * @param DummyResourceCamelSingularStoreRequest $request
+     *
+     * @throws Throwable
+     *
+     * @return DummyResourceCamelSingularResource
+     */
+    public function store(DummyModelClassService $service, DummyResourceCamelSingularStoreRequest $request)
+    {
+        $DummyModelVariableStoreValue = new DummyModelClassStoreValue($request->all());
+        $DummyModelVariable = $service->store($DummyModelVariableStoreValue);
+
+        return new DummyResourceCamelSingularResource($DummyModelVariable);
+    }
+
+    /**
+     * @SWG\Get(
+     *     path="/api/DummyUrl/{id}",
+     *     summary="RESOURCE取得",
+     *     description="RESOURCEを取得する。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *    @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Parameter(in="path", required=true, name="id", description="RESOURCEID", type="integer"),
+     *
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakeSingular",
+     *                 type="object",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularResource"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * Display the specified resource.
+     *
+     * @param DummyModelClass $DummyModelVariable
+     *
+     * @return DummyResourceCamelSingularResource
+     */
+    public function show(DummyModelClass $DummyModelVariable)
+    {
+        return new DummyResourceCamelSingularResource($DummyModelVariable);
+    }
+
+    /**
+     * @SWG\Put(
+     *     path="/api/DummyUrl/{id}",
+     *     summary="RESOURCE更新",
+     *     description="RESOURCEを更新する。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *    @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Parameter(in="path", required=true, name="id", description="RESOURCEID", type="integer"),
+     *     @SWG\Parameter(
+     *         name="Request",
+     *         description="リクエストパラメータ",
+     *         in="body",
+     *         required=true,
+     *         type="object",
+     *         @SWG\Schema(
+     *             ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularUpdateRequest"
+     *         )
+     *     ),
+     *
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakeSingular",
+     *                 type="object",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularResource"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * Update the specified resource in storage.
+     *
+     * @param DummyModelClassService $service
+     * @param DummyResourceCamelSingularUpdateRequest $request
+     * @param DummyModelClass $DummyModelVariable
+     *
+     * @throws Throwable
+     *
+     * @return DummyResourceCamelSingularResource
+     */
+    public function update(DummyModelClassService $service, DummyResourceCamelSingularUpdateRequest $request, DummyModelClass $DummyModelVariable)
+    {
+        $DummyModelVariableUpdateValue = new DummyModelClassUpdateValue($request->all());
+        $DummyModelVariable = $service->update($DummyModelVariableUpdateValue, $DummyModelVariable);
+
+        return new DummyResourceCamelSingularResource($DummyModelVariable);
+    }
+
+    /**
+     * @SWG\Delete(
+     *     path="/api/DummyUrl/{id}",
+     *     summary="RESOURCE削除",
+     *     description="RESOURCEを論理削除する。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *    @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Parameter(in="path", required=true, name="id", description="RESOURCEID", type="integer"),
+     *     @SWG\Parameter(
+     *         name="Request",
+     *         description="リクエストパラメータ",
+     *         in="body",
+     *         required=true,
+     *         type="object",
+     *         @SWG\Schema(
+     *             ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularUpdateRequest"
+     *         )
+     *     ),
+     *
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakeSingular",
+     *                 type="object",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularResource"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * Remove the specified resource from storage.
+     *
+     * @param DummyModelClassService $service
+     * @param DummyModelClass $DummyModelVariable
+     *
+     * @throws Throwable
+     *
+     * @return DummyResourceCamelSingularResource
+     */
+    public function destroy(DummyModelClassService $service, DummyModelClass $DummyModelVariable)
+    {
+        $DummyModelVariable = $service->destroy($DummyModelVariable);
+
+        return new DummyResourceCamelSingularResource($DummyModelVariable);
+    }
+
+    /**
+     * @SWG\Post(
+     *     path="/api/DummyUrl/search",
+     *     summary="RESOURCE検索",
+     *     description="RESOURCEを検索する。",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"DummyTag"},
+     *
+     *     @SWG\Parameter(
+     *         name="Authorization",
+     *         description="認証トークン",
+     *         in="header",
+     *         required=true,
+     *         type="string",
+     *     ),
+     *     @SWG\Parameter(
+     *         in="body",
+     *         name="Request",
+     *         required=true,
+     *         type="object",
+     *         description="リクエストパラメータ",
+     *         @SWG\Schema(
+     *             ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularSearchRequest"
+     *         )
+     *     ),
+     *     @SWG\Parameter(
+     *         in="query",
+     *         name="per_page",
+     *         required=false,
+     *         type="integer",
+     *         type="integer",
+     *         description="1ページの件数。パラメータで0を指定orパラメータを設定しなければ、ページネーションは機能しない<br/>
+                            ページネーションを機能させない場合、pageパラメータも無効となる",
+     *     ),
+     *     @SWG\Parameter(
+     *         in="query",
+     *         required=false,
+     *         name="page",
+     *         type="integer",
+     *         description="取得するページ番号"
+     *     ),
+     *
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="DummyResourceSnakePlural",
+     *                 ref="#/definitions/DummySwaggerDefinitionsHeadDummyResourceCamelSingularResourceCollection"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             ),
+     *             @SWG\Property(
+     *                 property="errors",
+     *                 type="array",
+     *                 description="項目別エラーメッセージ",
+     *                 @SWG\Items(
+     *                     @SWG\Property(property="key", type="array", @SWG\Items(type="string"))
+     *                 )
+     *             ),
+     *         )
+     *     )
+     * )
+     *
+     * @param DummyModelClassService $service
+     * @param DummyRelativeNamespaceDummyResourceCamelSingularSearchRequest $request
+     *
+     * @return DummyResourceCamelSingularResourceCollection
+     */
+    public function search(DummyModelClassService $service, DummyRelativeNamespaceDummyResourceCamelSingularSearchRequest $request)
+    {
+        $DummyModelVariable = $service->search($request->toArray());
+
+        return new DummyResourceCamelSingularResourceCollection($DummyModelVariable);
+    }
+}

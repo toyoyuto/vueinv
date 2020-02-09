@@ -1,0 +1,18 @@
+<?php
+
+namespace DummyNamespace;
+
+class DummyClass extends ValueObjectBase
+{
+    // protected で変数を定義
+
+    /**
+     * DummyClass constructor.
+     *
+     * @param array $params
+     */
+    public function __construct(array $params)
+    {
+        parent::__construct($params);
+    }
+}

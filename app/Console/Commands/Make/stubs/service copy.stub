@@ -1,0 +1,129 @@
+<?php
+
+namespace DummyNamespace;
+
+use DummyFullModelClass;
+use App\ValueObjects\DummyModelClassStoreValue;
+use App\ValueObjects\DummyModelClassUpdateValue;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Throwable;
+
+class DummyClass extends BaseService
+{
+    /**
+     * 検索を行う
+     *
+     * @param array $params
+     *
+     * @return Builder
+     */
+    public function query(array $params)
+    {
+        $params = collect($params);
+
+        // 同一
+        $query = DummyModelClass::whereSame([
+            'id' => $params->get('id'),
+        ]);
+
+        // 部分一致
+        $query->whereMatch([
+        ]);
+
+        // 前方一致
+        $query->whereForwardMatch([
+        ]);
+
+        // 包含
+        $query->whereInclude([
+        ]);
+
+        // 範囲
+        // 両端を含める場合はfirst、last
+        // 終端を含めない場合はbegin、end
+        $query->whereRange([
+            'created_at' => [
+                'first' => $params->get('created_at_first'),
+                'last'  => $params->get('created_at_last'),
+            ],
+            'updated_at' => [
+                'first' => $params->get('updated_at_first'),
+                'last'  => $params->get('updated_at_last'),
+            ],
+        ]);
+
+        return $query;
+    }
+
+    /**
+     * 登録、更新
+     *
+     * @param DummyModelClassStoreValue $value
+     *
+     * @throws Throwable
+     *
+     * @return DummyModelClass
+     */
+    public function store(DummyModelClassStoreValue $value)
+    {
+        $DummyModelVariable = new DummyModelClass();
+
+        DB::transaction(function () use (&$DummyModelVariable, $value): void {
+            $DummyModelVariable->fill($value->toArray())->save();
+        });
+
+        return $DummyModelVariable;
+    }
+
+    /**
+     * 更新
+     *
+     * @param DummyModelClassUpdateValue $value
+     * @param DummyModelClass $DummyModelVariable
+     *
+     * @throws Throwable
+     *
+     * @return DummyModelClass
+     */
+    public function update(DummyModelClassUpdateValue $value, DummyModelClass $DummyModelVariable)
+    {
+        DB::transaction(function () use (&$DummyModelVariable, $value): void {
+            $DummyModelVariable->fill($value->toArray())->save();
+        });
+
+        return $DummyModelVariable;
+    }
+
+    /**
+     * 削除
+     *
+     * @param DummyModelClass $DummyModelVariable
+     *
+     * @throws Throwable
+     *
+     * @return DummyModelClass
+     */
+    public function destroy(DummyModelClass $DummyModelVariable)
+    {
+        DB::transaction(function () use (&$DummyModelVariable): void {
+            $DummyModelVariable->delete();
+        });
+
+        return $DummyModelVariable;
+    }
+
+    /**
+     * 検索
+     *
+     * @param array $params
+     *
+     * @return LengthAwarePaginator|Collection
+     */
+    public function search(array $params)
+    {
+        return parent::search($params);
+    }
+}

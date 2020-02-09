@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\ProductSearchRequest;
+use App\ORM\Product;
 
 class ProductController extends Controller
 {
@@ -13,7 +15,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $products = Product::all();
+        return response()->json([
+            compact('products')
+        ]);
     }
 
     /**
@@ -40,12 +45,12 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Product $product)
     {
-        //
+        return response()->json(compact('product'), 200);
     }
 
     /**
@@ -80,5 +85,19 @@ class ProductController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  ProductSearchRequest  ProductSearchRequest
+     * @return \Illuminate\Http\Response
+     */
+    public function search(ProductSearchRequest $request)
+    {
+        $products = Product::where('id', $request->id)->get();
+        return response()->json([
+            compact('products')
+        ]);
     }
 }

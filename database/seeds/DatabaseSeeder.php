@@ -20,5 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductCategoriesTableSeeder::class);
         $this->call(ProductsTableSeeder::class);
         
+        // テスト系
+        $this->call(AccountsTableSeeder::class);
     }
 }

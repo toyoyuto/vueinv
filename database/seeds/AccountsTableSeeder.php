@@ -7,7 +7,6 @@ use App\ORM\Store;
 use App\ORM\Staff;
 use App\ORM\Product;
 use App\ORM\ConsumptionTax;
-use App\ORM\ProductCategory;
 use App\ORM\AccountMethod;
 use App\ORM\AccountProduct;
 use App\ORM\Discount;
