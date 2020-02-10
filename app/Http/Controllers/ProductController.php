@@ -12,21 +12,42 @@ class ProductController extends Controller
     /**
      * @SWG\Get(
      *     path="/api/products",
-     *     description="s商品一覧取得",
+     *     summary="商品一覧取得",
+     *     description="商品一覧取得する",
+     * 　　consumes={"application/json"},
      *     produces={"application/json"},
      *     tags={"Product"},
      *     @SWG\Response(
      *         response=200,
-     *         description="Success"
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="products",
+     *                 type="array",
+     *                 @SWG\Items(ref="#/definitions/product")
+     *             )
+     *         )
      *     ),
      *     @SWG\Response(
-     *         response=404,
-     *         description="Parameter error"
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
      *     ),
      *     @SWG\Response(
-     *         response=403,
-     *         description="Auth error",
-     *     ),
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             )
+     *         )
+     *     )
      * )
      */
 
@@ -63,6 +84,42 @@ class ProductController extends Controller
     {
         //
     }
+
+    /**
+     * @SWG\Get(
+     *     path="/api/products/{id}",
+     *     summary="商品取得",
+     *     description="指定したIDの商品を取得する",
+     * 　　consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"Product"},
+     *   　@SWG\Parameter(
+     *         name="id",
+     *         description="商品ID",
+     *         in="path",
+     *         type="integer",
+     *         required=true
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="product",
+     *                 type="object",
+     *                 ref="#/definitions/product"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     )
+     * )
+     */
 
     /**
      * Display the specified resource.
@@ -108,6 +165,57 @@ class ProductController extends Controller
     {
         //
     }
+
+     /**
+     * @SWG\POST(
+     *     path="/api/products/search",
+     *     summary="商品一覧検索",
+     *     description="商品一覧検索する",
+     * 　　consumes={"application/json"},
+     *     produces={"application/json"},
+     *     tags={"Product"},
+     * 　　@SWG\Parameter(
+     *         name="Request",
+     *         description="商品検索情報",
+     *         in="body",
+     *         required=true,
+     *         @SWG\Property(
+     *              ref="#/definitions/ProductSearchRequest"
+     * 　　　　 )
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success",
+     *         @SWG\Schema(
+     *             @SWG\Property(
+     *                 property="products",
+     *                 type="array",
+     *                 @SWG\Items(ref="#/definitions/product")
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @SWG\Schema(
+     *             @SWG\Property(property="message", type="string", description="Unauthenticated.")
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=422,
+     *         description="Unprocessable Entity",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 description="エラーメッセージ一覧",
+     *                 @SWG\Items(type="string")
+     *             )
+     *         )
+     *     )
+     * )
+     */
 
     /**
      * Remove the specified resource from storage.

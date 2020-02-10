@@ -147,6 +147,7 @@ return [
 
     'attributes' => [
         'id' => 'ID',
+        'product_cd' => '商品CD',
         'product_category_id' => 'カテゴリーID',
         'without_tax_sell_price' => '販売価格',
         'email' => 'メールアドレス',
