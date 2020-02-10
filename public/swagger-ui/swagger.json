@@ -1,0 +1,38 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "VUE-INV\u306eAPI\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8",
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "paths": {
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Product"
+                ],
+                "description": "s\u5546\u54c1\u4e00\u89a7\u53d6\u5f97",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Parameter error"
+                    },
+                    "403": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {}
+}

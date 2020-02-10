@@ -8,6 +8,28 @@ use App\ORM\Product;
 
 class ProductController extends Controller
 {
+
+    /**
+     * @SWG\Get(
+     *     path="/api/products",
+     *     description="s商品一覧取得",
+     *     produces={"application/json"},
+     *     tags={"Product"},
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Success"
+     *     ),
+     *     @SWG\Response(
+     *         response=404,
+     *         description="Parameter error"
+     *     ),
+     *     @SWG\Response(
+     *         response=403,
+     *         description="Auth error",
+     *     ),
+     * )
+     */
+
     /**
      * Display a listing of the resource.
      *

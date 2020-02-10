@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;  // 追加
+use Illuminate\Contracts\Validation\Validator;  
 use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Constants\Constants;
 
 class BaseRequest extends FormRequest
 {
@@ -24,7 +25,7 @@ class BaseRequest extends FormRequest
         $collection = collect($validator->errors())->flatten(1);
         $message = collect(["message" => $collection]);
         throw new HttpResponseException(
-            response()->json( $message, 422)
+            response()->json( $message,Constants::SERVER_STATES['unprocessable'])
         );
     }
 }
