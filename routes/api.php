@@ -17,5 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 // 商品系
-Route::resource('products', 'ProductController')->only(['index', 'show']);
-Route::post('/products/search', 'ProductController@search');
+Route::middleware(['cors'])->group(function () {
+    Route::resource('products', 'ProductController')->only(['index', 'show']);
+    Route::post('/products/search', 'ProductController@search');
+});

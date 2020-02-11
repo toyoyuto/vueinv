@@ -59,9 +59,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        return response()->json([
-            compact('products')
-        ]);
+        return response()->json(compact('products'));
     }
 
     /**
@@ -226,8 +224,8 @@ class ProductController extends Controller
     public function search(ProductSearchRequest $request)
     {
         $products = Product::where('id', $request->id)->get();
-        return response()->json([
+        return response()->json(
             compact('products')
-        ]);
+        );
     }
 }
